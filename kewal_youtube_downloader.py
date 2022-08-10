@@ -6,12 +6,23 @@ from datetime import datetime
 from pytube import Playlist
 from pytube import YouTube
 
-path_video_file = 'Videos_from_youtube'  # Make sure you have change your location
+path_video_file = 'Videos_from_youtube'  # To Change the location of output edit this
 path_playlist_file = 'Playlist_from_youtube'
-now = datetime.now()
 
 
-def speed_testing():                # This function will give us our downloading speed [not used in this program]
+def make_output_files():
+    try:
+        for file in os.listdir():
+            if path_video_file and path_playlist_file not in file:
+                os.mkdir("./" + path_playlist_file)
+                os.mkdir("./" + path_video_file)
+            else:
+                pass
+    except Exception as e:
+        print(f"Error occurred while generating output files :> {e}")
+
+
+def speed_testing():  # This function will give us our downloading speed
     st = speedtest.Speedtest()
     download_result = st.download()
     print(f"Download speed: {download_result / 1024 / 1024:.2f}Mb/s")
@@ -40,12 +51,14 @@ def playlist_info(link):  # This function will show total number of videos prese
 
 def download_video(link):  # This function will Download a single video
     try:
-        print(f"> Session started : {now.strftime('%H:%M:%S')}")
+        n = datetime.now()
+        print(f"\n> Session started : {n.strftime('%H:%M:%S')}")
         print("-" * 50)
         print(f"Downloading :>  {link.title}")
         link.streams.get_highest_resolution().download(path_video_file)
         print("-" * 50)
-        print(f"> Session ended : {now.strftime('%H:%M:%S')}")
+        n = datetime.now()
+        print(f"> Session ended : {n.strftime('%H:%M:%S')}")
         print("Download complete!")
         print(f"Output video location : /{path_video_file}/")
     except Exception as e:
@@ -55,12 +68,14 @@ def download_video(link):  # This function will Download a single video
 def download_playlist(link):  # This function will Download the whole playlist and store it in a channel's named folder
     os.mkdir(f"{path_playlist_file}/{link.owner}")
     try:
-        print(f"> Session started : {now.strftime('%H:%M:%S')}")
+        now = datetime.now()
+        print(f"\n> Session started : {now.strftime('%H:%M:%S')}")
         print("-" * 50)
         for video in link.videos:
             print(f"Downloading :> {video.title}")
             video.streams.get_highest_resolution().download(f"{path_playlist_file}/{link.owner}")
         print("-" * 50)
+        now = datetime.now()
         print(f"> Session ended : {now.strftime('%H:%M:%S')}")
         print("Download Complete!")
         print(f"Output video location : /{path_playlist_file}/{link.owner}/")
@@ -77,13 +92,15 @@ def help_menu():  # Help menu
         Commands:-
         info -> For retrieving video information
         playlist -> For retrieving playlist information
-        d-video -> For downloading single video 
-        p-video -> For downloading whole playlist
+        v-download -> For downloading single video 
+        p-download -> For downloading whole playlist
 
         NOTE: Make sure you have paste the link between Quotation Marks -- "link" / 'link'
         ''')
     print("-" * 50)
 
+
+make_output_files()  # This will create your output files
 
 if len(sys.argv) == 3:  # Main program
     command = sys.argv[1]
@@ -94,10 +111,10 @@ if len(sys.argv) == 3:  # Main program
     elif command == 'playlist' and youtube_link != "":
         youtube_link = Playlist(sys.argv[2])
         playlist_info(youtube_link)
-    elif command == "d-video" and youtube_link != "":
+    elif command == "v-download" and youtube_link != "":
         youtube_link = YouTube(sys.argv[2])
         download_video(youtube_link)
-    elif command == 'p-video' and youtube_link != "":
+    elif command == 'p-download' and youtube_link != "":
         youtube_link = Playlist(sys.argv[2])
         download_playlist(youtube_link)
     else:
